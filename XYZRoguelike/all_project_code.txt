@@ -1,0 +1,714 @@
+﻿--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\DeveloperLevel.cpp ---
+#include "DeveloperLevel.h"
+#include "Wall.h"
+#include "MazeGenerator.h"
+
+using namespace XYZEngine;
+
+namespace XYZRoguelike
+{
+	void DeveloperLevel::Start()
+	{
+		int width = 15;
+		int height = 15;
+
+		for (int y = 0; y < height + 1; y++)
+		{
+			for (int x = 0; x < width + 1; x++)
+			{
+				//if not wall place
+				if (x != 0 && x != width && y != 0 && y != height)
+				{
+					floors.push_back(std::make_unique<Floor>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(0)));
+				}
+
+				//if left-bottom corner
+				if (x == 0 && y == 0)
+				{
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(25)));
+				}
+
+				//if right-bottom corner
+				if (x == width && y == 0)
+				{
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(27)));
+				}
+
+				//if left-top corner
+				if (x == 0 && y == height)
+				{
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(1)));
+				}
+
+				//if right-top corner
+				if (x == width && y == height)
+				{
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(3)));
+				}
+
+				//if left (not corner)
+				if (x == 0 && y != height && y != 0)
+				{
+					floors.push_back(std::make_unique<Floor>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(18)));
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(12)));
+				}
+
+				//if right (not corner)
+				if (x == width && y != height && y != 0)
+				{
+					floors.push_back(std::make_unique<Floor>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(19)));
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(12)));
+				}
+
+				//if bottom (not corner)
+				if (y == 0 && x != width && x != 0)
+				{
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(38)));
+				}
+
+				//if top (not corner)
+				if (y == height && x != width && x != 0)
+				{
+					walls.push_back(std::make_unique<Wall>(std::forward<XYZEngine::Vector2Df>({ x * 128.f, y * 128.f }), std::forward<int>(38)));
+				}
+			}
+		}
+
+		// Maze Generator
+		MazeGenerator mazeGenerator(width, height, this);
+		mazeGenerator.Generate();
+
+		player = std::make_unique<Player>(std::forward<XYZEngine::Vector2Df>({ width / 2 * 128.f, height / 2 * 128.f }));
+		ai = std::make_unique<AI>(std::forward<XYZEngine::Vector2Df>({ width / 3 * 128.f, height / 3 * 128.f }), player->GetGameObject());
+		music = std::make_unique<Music>("music");
+	}
+	void DeveloperLevel::Restart()
+	{
+		Stop();
+		Start();
+	}
+	void DeveloperLevel::Stop() 
+	{
+		GameWorld::Instance()->Clear();
+	}
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\DeveloperLevel.h ---
+#pragma once
+
+#include <iostream>
+#include <array>
+#include "Scene.h"
+#include "Player.h"
+#include "AI.h"
+#include "Music.h"
+#include "Floor.h"
+#include "Wall.h"
+
+using namespace XYZEngine;
+
+namespace XYZRoguelike
+{
+	class DeveloperLevel : public Scene
+	{
+	public:
+		void Start() override;
+		void Restart() override;
+		void Stop() override;
+
+		std::vector<std::unique_ptr<Wall>> walls;
+		std::vector<std::unique_ptr<Floor>> floors;
+
+	private:
+		std::shared_ptr<Player> player;
+		std::shared_ptr<AI> ai;
+		std::unique_ptr<Music> music;
+
+	};
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Floor.cpp ---
+#include "Floor.h"
+
+XYZRoguelike::Floor::Floor(const XYZEngine::Vector2Df& position, int textureMapIndex)
+{
+	gameObject = XYZEngine::GameWorld::Instance()->CreateGameObject("Floor");
+	auto transform = gameObject->GetComponent<XYZEngine::TransformComponent>();
+	transform->SetWorldPosition(position);
+
+	auto renderer = gameObject->AddComponent<XYZEngine::SpriteRendererComponent>();
+	renderer->SetTexture(*XYZEngine::ResourceSystem::Instance()->GetTextureMapElementShared("level_floors", textureMapIndex));
+	renderer->SetPixelSize(128, 128);
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Floor.h ---
+#pragma once
+
+#include <GameWorld.h>
+#include <SpriteRendererComponent.h>
+#include <ResourceSystem.h>
+#include "GameObject.h"
+
+namespace XYZRoguelike
+{
+	class Floor
+	{
+	public:
+		Floor(const XYZEngine::Vector2Df& position, int textureMapIndex);
+	private:
+		XYZEngine::GameObject* gameObject;
+	};
+}
+
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\GameMain.cpp ---
+// ©2023, XYZ School. All rights reserved.
+// Authored by Aleksandr Rybalka (polterageist@gmail.com)
+
+#include <SFML/Graphics.hpp>
+//#include "Player.h"
+#include "Engine.h"
+#include "ResourceSystem.h"
+#include "DeveloperLevel.h"
+//#include "Matrix2D.h"
+#include "GameSettings.h"
+
+using namespace XYZRoguelike;
+
+int main()
+{
+	SETTINGS.LoadFromJson("settings.json");// Loading from the JSON configuration of the game
+	
+	XYZEngine::RenderSystem::Instance()->SetMainWindow(new sf::RenderWindow(sf::VideoMode(SETTINGS.SCREEN_WIDTH, SETTINGS.SCREEN_HEIGHT), "XYZRoguelike"));
+
+	ResourceSystem::Instance()->LoadTextureMap("player", SETTINGS.PLAYER_TEXTURES_PATH, { 48, 63 }, 4, false);
+	ResourceSystem::Instance()->LoadTextureMap("level_floors", SETTINGS.LEVELFLOOR_TEXTURES_PATH, { 16, 16 }, 49, false);
+	ResourceSystem::Instance()->LoadTextureMap("level_walls", SETTINGS.LEVELWALL_TEXTURES_PATH, { 16, 16 }, 48, false);
+
+	ResourceSystem::Instance()->LoadSound("music", SETTINGS.MUSIC_PATH);
+
+	auto developerLevel = std::make_shared<DeveloperLevel>();
+	developerLevel->Start();
+
+	XYZEngine::Engine::Instance()->Run();
+
+	return 0;
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\GameSettings.cpp ---
+#include "GameSettings.h"
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
+
+// JSON parsing
+
+using json = nlohmann::json;
+
+namespace XYZRoguelike
+{
+	GameSettings::GameSettings()
+	{
+		// Initializing calculated values at the first creation
+		RecalculateDerivedValues();
+	}
+
+	void GameSettings::RecalculateDerivedValues()
+	{
+		std::cerr << "RecalculateDerivedValues started " << std::endl;
+		TEXTURES_PATH = RESOURCES_PATH + "Textures/";
+		FONTS_PATH = RESOURCES_PATH + "Fonts/";
+		SOUNDS_PATH = RESOURCES_PATH + "Sounds/";
+
+		BLOCK_WIDTH = (SCREEN_WIDTH - (BLOCKS_COUNT_IN_ROW + 1) * BLOCK_SHIFT) / BLOCKS_COUNT_IN_ROW;
+	}
+
+	void GameSettings::LoadFromJson(const std::string& filePath)
+	{
+		std::ifstream file(filePath);
+		if (!file.is_open())
+		{
+			std::cerr << "Warning: Could not open " << filePath << ". Using default C++ settings." << std::endl;
+			//RecalculateDerivedValues();
+			return;
+		}
+
+		try
+		{
+			json j;
+			file >> j;
+
+			// App
+			if (j.contains("App")) {
+				GAME_NAME = j["App"].value("GameName", GAME_NAME);
+				SCREEN_WIDTH = j["App"].value("ScreenWidth", SCREEN_WIDTH);
+				SCREEN_HEIGHT = j["App"].value("ScreenHeight", SCREEN_HEIGHT);
+
+				int fps = j["App"].value("Fps", 60);
+				if (fps > 0) TIME_PER_FRAME = 1.f / static_cast<float>(fps);
+			}
+
+			// Gameplay
+			if (j.contains("Gameplay")) {
+				ACCELERATION = j["Gameplay"].value("Acceleration", ACCELERATION);
+				MAX_APPLES = j["Gameplay"].value("MaxApples", MAX_APPLES);
+				BALL_SIZE = j["Gameplay"].value("BallSize", BALL_SIZE);
+				BALL_SPEED = j["Gameplay"].value("BallSpeed", BALL_SPEED);
+				BREAK_DELAY = j["Gameplay"].value("BreakDelay", BREAK_DELAY);
+				BONUS_DURATION = j["Gameplay"].value("BonusDuration", BONUS_DURATION);
+				BONUS_PROPABILITY_PERCENT = j["Gameplay"].value("BonusProbabilityPercent", BONUS_PROPABILITY_PERCENT);
+			}
+
+			// Platform
+			if (j.contains("Platform")) {
+				PLATFORM_WIDTH = j["Platform"].value("Width", PLATFORM_WIDTH);
+				PLATFORM_HEIGHT = j["Platform"].value("Height", PLATFORM_HEIGHT);
+				PLATFORM_SPEED = j["Platform"].value("Speed", PLATFORM_SPEED);
+			}
+
+			// Blocks
+			if (j.contains("Blocks")) {
+				BLOCKS_COUNT_ROWS = j["Blocks"].value("CountRows", BLOCKS_COUNT_ROWS);
+				BLOCKS_COUNT_IN_ROW = j["Blocks"].value("CountInRow", BLOCKS_COUNT_IN_ROW);
+				BLOCK_SHIFT = j["Blocks"].value("Shift", BLOCK_SHIFT);
+				BLOCK_HEIGHT = j["Blocks"].value("Height", BLOCK_HEIGHT);
+			}
+
+			// Player
+			if (j.contains("Player")) {
+				PLAYER_NAME = j["Player"].value("Name", PLAYER_NAME);
+				MAX_RECORDS_TABLE_SIZE = j["Player"].value("MaxRecordsTableSize", MAX_RECORDS_TABLE_SIZE);
+			}
+
+			// Paths
+			if (j.contains("Paths")) {
+				RESOURCES_PATH = j["Paths"].value("Resources", RESOURCES_PATH);
+				LEVELS_CONFIG_PATH = j["Paths"].value("LevelsConfig", LEVELS_CONFIG_PATH);
+			}
+
+			// Recalculating the dependent variables after updating the base ones
+			RecalculateDerivedValues();
+
+			std::cout << "Settings successfully loaded from " << filePath << std::endl;
+		}
+		catch (const json::exception& e)
+		{
+			std::cerr << "JSON Parsing error in " << filePath << ": " << e.what() << std::endl;
+			
+		}
+	}
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\GameSettings.h ---
+#pragma once
+#include <string>
+
+namespace XYZRoguelike
+{
+	class GameSettings {
+	private:
+		GameSettings();
+
+	public:
+		static GameSettings& Instance() {
+			static GameSettings gameWorld;
+			return gameWorld;
+		}
+
+		// Json upload method
+		void LoadFromJson(const std::string& filePath);
+		
+		// Метод для перерасчета зависимых переменных (пути, BLOCK_WIDTH и т.д.)
+		void RecalculateDerivedValues();
+
+		// Resources path
+		std::string RESOURCES_PATH = "Resources/";
+		std::string TEXTURES_PATH;
+		std::string FONTS_PATH;
+		std::string SOUNDS_PATH;
+		std::string LEVELS_CONFIG_PATH = "Resources/levels.config";
+
+		// Game settings constants
+		float ACCELERATION = 10.f;
+		int MAX_APPLES = 80;
+		////////////////////////////////////////////////
+		// Resources path
+		std::string PLAYER_TEXTURES_PATH = "Resources/TextureMaps/Player.png";
+
+		std::string LEVELFLOOR_TEXTURES_PATH = "Resources/TextureMaps/Floor.png";
+		std::string LEVELWALL_TEXTURES_PATH = "Resources/TextureMaps/Wall.png";
+		// Sounds
+		std::string MUSIC_PATH = "Resources/Music/Music.ogg";
+		// Screen Settings
+		unsigned int SCREEN_WIDTH = 1280;
+		unsigned int SCREEN_HEIGHT = 720;
+		/////////////////////////////////////////////////
+
+
+
+		float TIME_PER_FRAME; // Вычисляется из FPS
+
+		unsigned int BALL_SIZE = 20;
+		unsigned int BALL_SPEED = 400;
+
+		unsigned int PLATFORM_WIDTH = 60;
+		unsigned int PLATFORM_HEIGHT = 20;
+		float PLATFORM_SPEED = 300.f;
+
+		unsigned int BLOCKS_COUNT_ROWS = 4;
+		unsigned int BLOCKS_COUNT_IN_ROW = 15;
+		unsigned int BLOCK_SHIFT = 5;
+		unsigned int BLOCK_WIDTH; // Вычисляется
+		unsigned int BLOCK_HEIGHT = 20;
+
+		int MAX_RECORDS_TABLE_SIZE = 5;
+		std::string PLAYER_NAME = "Player"; // Заменили const char* на std::string
+
+		std::string GAME_NAME = "ArkanoidGame";
+		float BREAK_DELAY = 1.f;
+		float BONUS_DURATION = 30.f;
+		int BONUS_PROPABILITY_PERCENT = 5;
+	};
+}
+
+#define SETTINGS XYZRoguelike::GameSettings::Instance()
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\MazeGenerator.cpp ---
+#include "MazeGenerator.h"
+#include "DeveloperLevel.h"
+#include <cstdlib>
+#include <ctime>
+
+namespace XYZRoguelike
+{
+    // Constructor: Initializes the maze generator with the given dimensions and level reference.
+    MazeGenerator::MazeGenerator(int width, int height, DeveloperLevel* level)
+        : width(width), height(height), level(level)
+    {
+        // Resize the grid to match the maze dimensions and initialize all cells as unvisited (false).
+        grid.resize(height, std::vector<bool>(width, false));
+    }
+
+    // Generate: Creates a maze using the Depth-First Search (DFS) algorithm.
+    void MazeGenerator::Generate()
+    {
+        // Seed the random number generator for consistent randomness.
+        std::srand(std::time(nullptr));
+
+        // Start from a random cell in the grid.
+        int startX = std::rand() % width;
+        int startY = std::rand() % height;
+
+        // Use a stack to keep track of visited cells during DFS.
+        std::stack<std::pair<int, int>> stack;
+        stack.push({ startX, startY });
+        grid[startY][startX] = true; // Mark the starting cell as visited.
+
+        // Continue until the stack is empty (all cells are processed).
+        while (!stack.empty())
+        {
+            // Get the current cell from the top of the stack.
+            auto [x, y] = stack.top();
+            stack.pop();
+
+            // Get all available directions (unvisited neighboring cells) from the current cell.
+            std::vector<std::pair<int, int>> directions = GetAvailableDirections(x, y);
+
+            // If there are available directions, process them.
+            if (!directions.empty())
+            {
+                // Push the current cell back onto the stack to revisit later.
+                stack.push({ x, y });
+
+                // Randomly select one of the available directions.
+                std::pair<int, int> dir = directions[std::rand() % directions.size()];
+                int nx = x + dir.first;
+                int ny = y + dir.second;
+
+                // Remove the wall between the current cell and the selected neighbor.
+                RemoveWall(x, y, nx, ny);
+
+                // Mark the neighbor as visited and push it onto the stack for further exploration.
+                grid[ny][nx] = true;
+                stack.push({ nx, ny });
+            }
+        }
+    }
+
+    // GetAvailableDirections: Returns a list of valid, unvisited neighboring cells.
+    std::vector<std::pair<int, int>> MazeGenerator::GetAvailableDirections(int x, int y)
+    {
+        // Define possible directions: up, down, left, right (2 cells away to leave space for walls).
+        std::vector<std::pair<int, int>> directions = {
+            {0, -2}, // Up
+            {0, 2},  // Down
+            {-2, 0}, // Left
+            {2, 0}   // Right
+        };
+
+        std::vector<std::pair<int, int>> available;
+
+        // Check each direction to see if it leads to a valid, unvisited cell.
+        for (const auto& dir : directions)
+        {
+            int nx = x + dir.first;
+            int ny = y + dir.second;
+
+            // Ensure the neighbor is within bounds and unvisited.
+            if (nx >= 0 && nx < width && ny >= 0 && ny < height && !grid[ny][nx])
+            {
+                available.push_back(dir);
+            }
+        }
+
+        return available;
+    }
+
+    // RemoveWall: Removes the wall between two cells and adds floors and walls to the level.
+    void MazeGenerator::RemoveWall(int x1, int y1, int x2, int y2)
+    {
+        // Calculate the position of the wall between the two cells.
+        int wallX = (x1 + x2) / 2;
+        int wallY = (y1 + y2) / 2;
+
+        // Add floors to the current cell and the neighboring cell.
+        level->floors.push_back(std::make_unique<Floor>(
+            XYZEngine::Vector2Df{ x1 * 128.f, y1 * 128.f }, 0));
+        level->floors.push_back(std::make_unique<Floor>(
+            XYZEngine::Vector2Df{ x2 * 128.f, y2 * 128.f }, 0));
+
+        // Add a wall at the midpoint if the cells are not directly adjacent.
+        if (wallX != x1 || wallY != y1)
+        {
+            level->walls.push_back(std::make_unique<Wall>(
+                XYZEngine::Vector2Df{ wallX * 128.f, wallY * 128.f }, 14));
+        }
+    }
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\MazeGenerator.h ---
+#include "DeveloperLevel.h"
+#include <vector>
+#include <stack>
+
+namespace XYZRoguelike
+{
+    class MazeGenerator
+    {
+    public:
+        MazeGenerator(int width, int height, DeveloperLevel* level);
+        void Generate();
+
+    private:
+        int width, height;
+        DeveloperLevel* level;
+        std::vector<std::vector<bool>> grid;
+
+        std::vector<std::pair<int, int>> GetAvailableDirections(int x, int y);
+        void RemoveWall(int x1, int y1, int x2, int y2);
+    };
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Music.cpp ---
+#include "Music.h"
+
+Music::Music(const std::string& soundName)
+{
+	auto gameObject = XYZEngine::GameWorld::Instance()->CreateGameObject("Music: " + soundName);
+	auto music = gameObject->AddComponent<XYZEngine::AudioComponent>();
+	music->SetAudio(*XYZEngine::ResourceSystem::Instance()->GetSound(soundName));
+	music->SetLoop(true);
+	music->Play();
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Music.h ---
+#pragma once
+
+#include <GameObject.h>
+#include <GameWorld.h>
+#include <AudioComponent.h>
+#include <ResourceSystem.h>
+
+class Music
+{
+public:
+	Music(const std::string& soundName);
+private:
+	XYZEngine::GameObject* gameObject;
+};
+
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Player.cpp ---
+#include "Player.h"
+#include <ResourceSystem.h>
+#include <SpriteColliderComponent.h>
+#include <MovementComponent.h>
+#include <SpriteDirectionComponent.h>
+#include <SpriteMovementAnimationComponent.h>
+
+namespace XYZRoguelike
+{
+	Player::Player(const XYZEngine::Vector2Df& position)
+	{
+		gameObject = XYZEngine::GameWorld::Instance()->CreateGameObject("Player");
+		auto transform = gameObject->GetComponent<XYZEngine::TransformComponent>();
+		transform->SetWorldPosition(position);
+
+		auto renderer = gameObject->AddComponent<XYZEngine::SpriteRendererComponent>();
+		renderer->SetTexture(*XYZEngine::ResourceSystem::Instance()->GetTextureMapElementShared("player", 0));
+		renderer->SetPixelSize(100, 100);
+
+		auto camera = gameObject->AddComponent<XYZEngine::CameraComponent>();
+		camera->SetWindow(&XYZEngine::RenderSystem::Instance()->GetMainWindow());
+		camera->SetBaseResolution(1280, 720);
+
+		auto input = gameObject->AddComponent<XYZEngine::InputComponent>();
+
+		auto movement = gameObject->AddComponent<XYZEngine::MovementComponent>();
+		movement->SetSpeed(400.f);
+
+		auto spriteDirection = gameObject->AddComponent<XYZEngine::SpriteDirectionComponent>();
+
+		auto rigidbody = gameObject->AddComponent<XYZEngine::RigidbodyComponent>();
+		rigidbody->SetKinematic(false);
+
+		auto collider = gameObject->AddComponent<XYZEngine::SpriteColliderComponent>();
+
+		auto animator = gameObject->AddComponent<XYZEngine::SpriteMovementAnimationComponent>();
+		animator->Initialize("player", 6.f);
+	}
+
+	XYZEngine::GameObject* Player::GetGameObject()
+	{
+		return gameObject;
+	}
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Player.h ---
+#pragma once
+
+#include "CameraComponent.h"
+#include "GameWorld.h"
+#include "SpriteRendererComponent.h"
+#include "RenderSystem.h"
+#include "InputComponent.h"
+#include "GameObject.h"
+#include "Vector.h"
+
+namespace XYZRoguelike
+{
+	class Player
+	{
+	public:
+		Player(const XYZEngine::Vector2Df& position);
+		XYZEngine::GameObject* GetGameObject();
+	private:
+		XYZEngine::GameObject* gameObject;
+	};
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Vector.h ---
+#pragma once
+
+namespace XYZRoguelike
+{
+	template<typename T>
+	struct Vector2D
+	{
+		T x = (T)0;
+		T y = (T)0;
+	};
+
+	using Vector2Df = Vector2D<float>;
+	using Vector2Di = Vector2D<int>;
+	using Position = Vector2Df;
+
+	template<typename T>
+	Vector2D<T> operator+(const Vector2D<T>& lhs, const Vector2D<T>& rhs)
+	{
+		return { lhs.x + rhs.x, lhs.y + rhs.y };
+	}
+
+	template<typename T>
+	Vector2D<T> operator-(const Vector2D<T>& lhs, const Vector2D<T>& rhs)
+	{
+		return { lhs.x - rhs.x, lhs.y - rhs.y };
+	}
+
+	template<typename T>
+	bool operator==(const Vector2D<T>& lhs, const Vector2D<T>& rhs)
+	{
+		return lhs.x == rhs.x && lhs.y == rhs.y;
+	}
+
+	template<typename T>
+	float GetLength(const Vector2D<T>& vector)
+	{
+		return sqrtf(vector.x * vector.x + vector.y * vector.y);
+	}
+
+	// This complex template allows us to convert any vector type to any other vector type (like our Vector2D to SFML's Vector and vice versa)
+	template<typename U, typename V>
+	U Convert(const V& v)
+	{
+		// decltype deduces type from expression
+		return { static_cast<decltype(U::x)>(v.x), static_cast<decltype(U::y)>(v.y) };
+	}
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Wall.cpp ---
+#include "Wall.h"
+#include <SpriteMovementAnimationComponent.h>
+#include <SpriteColliderComponent.h>
+
+XYZRoguelike::Wall::Wall(const XYZEngine::Vector2Df position, int textureMapIndex)
+{
+	gameObject = XYZEngine::GameWorld::Instance()->CreateGameObject("Wall");
+	auto transform = gameObject->GetComponent<XYZEngine::TransformComponent>();
+	transform->SetWorldPosition(position);
+
+	auto renderer = gameObject->AddComponent<XYZEngine::SpriteRendererComponent>();
+	renderer->SetTexture(*XYZEngine::ResourceSystem::Instance()->GetTextureMapElementShared("level_walls", textureMapIndex));
+	renderer->SetPixelSize(128, 128);
+
+	auto rigidbody = gameObject->AddComponent<XYZEngine::RigidbodyComponent>();
+	rigidbody->SetKinematic(true);
+
+	auto collider = gameObject->AddComponent<XYZEngine::SpriteColliderComponent>();
+}
+--- END FILE ---
+
+--- START FILE: C:\XYZ_CPP\ActionRogalique\XYZRoguelike\Wall.h ---
+#pragma once
+
+#include <GameWorld.h>
+#include <ResourceSystem.h>
+#include "GameObject.h"
+
+namespace XYZRoguelike
+{
+	class Wall
+	{
+	public:
+		Wall(const XYZEngine::Vector2Df position, int textureMapIndex);
+	private:
+		XYZEngine::GameObject* gameObject;
+	};
+}
+
+--- END FILE ---
+

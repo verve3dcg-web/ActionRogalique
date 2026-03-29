@@ -161,6 +161,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AI.cpp" />
     <ClCompile Include="DeveloperLevel.cpp" />
     <ClCompile Include="Floor.cpp" />
     <ClCompile Include="GameSettings.cpp" />
@@ -171,6 +172,7 @@
     <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AI.h" />
     <ClInclude Include="DeveloperLevel.h" />
     <ClInclude Include="Floor.h" />
     <ClInclude Include="MazeGenerator.h" />

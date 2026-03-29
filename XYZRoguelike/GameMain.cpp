@@ -18,6 +18,7 @@ int main()
 	XYZEngine::RenderSystem::Instance()->SetMainWindow(new sf::RenderWindow(sf::VideoMode(SETTINGS.SCREEN_WIDTH, SETTINGS.SCREEN_HEIGHT), "XYZRoguelike"));
 
 	ResourceSystem::Instance()->LoadTextureMap("player", SETTINGS.PLAYER_TEXTURES_PATH, { 48, 63 }, 4, false);
+	ResourceSystem::Instance()->LoadTextureMap("AI", SETTINGS.PLAYER_TEXTURES_PATH, { 48, 63 }, 4, false);
 	ResourceSystem::Instance()->LoadTextureMap("level_floors", SETTINGS.LEVELFLOOR_TEXTURES_PATH, { 16, 16 }, 49, false);
 	ResourceSystem::Instance()->LoadTextureMap("level_walls", SETTINGS.LEVELWALL_TEXTURES_PATH, { 16, 16 }, 48, false);
 
