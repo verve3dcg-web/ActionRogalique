@@ -1,55 +1,72 @@
-#pragma once
+﻿#pragma once
 #include <string>
-
 
 namespace XYZRoguelike
 {
-	class GameWorld {
+	class GameSettings {
 	private:
+		GameSettings();
 
-		GameWorld() = default;
 	public:
-		static GameWorld& Instance() {
-			static GameWorld gameWorld;
+		static GameSettings& Instance() {
+			static GameSettings gameWorld;
 			return gameWorld;
 		}
 
+		// Json upload method
+		void LoadFromJson(const std::string& filePath);
+		
+		// Метод для перерасчета зависимых переменных (пути, BLOCK_WIDTH и т.д.)
+		void RecalculateDerivedValues();
 
 		// Resources path
-		const std::string RESOURCES_PATH = "Resources/";
-		const std::string TEXTURES_PATH = RESOURCES_PATH + "Textures/";
-		const std::string FONTS_PATH = RESOURCES_PATH + "Fonts/";
-		const std::string SOUNDS_PATH = RESOURCES_PATH + "Sounds/";
-		const std::string LEVELS_CONFIG_PATH = RESOURCES_PATH + "levels.config";
+		std::string RESOURCES_PATH = "Resources/";
+		std::string TEXTURES_PATH;
+		std::string FONTS_PATH;
+		std::string SOUNDS_PATH;
+		std::string LEVELS_CONFIG_PATH = "Resources/levels.config";
 
 		// Game settings constants
-		const float ACCELERATION = 10.f;
-		const int MAX_APPLES = 80;
-		const unsigned int SCREEN_WIDTH = 800;
-		const unsigned int SCREEN_HEIGHT = 600;
-		const float TIME_PER_FRAME = 1.f / 60.f; // 60 fps
+		float ACCELERATION = 10.f;
+		int MAX_APPLES = 80;
+		////////////////////////////////////////////////
+		// Resources path
+		std::string PLAYER_TEXTURES_PATH = "Resources/TextureMaps/Player.png";
 
-		const unsigned int BALL_SIZE = 20;
-		const unsigned int BALL_SPEED = 400;
+		std::string LEVELFLOOR_TEXTURES_PATH = "Resources/TextureMaps/Floor.png";
+		std::string LEVELWALL_TEXTURES_PATH = "Resources/TextureMaps/Wall.png";
+		// Sounds
+		std::string MUSIC_PATH = "Resources/Music/Music.ogg";
+		// Screen Settings
+		unsigned int SCREEN_WIDTH = 1280;
+		unsigned int SCREEN_HEIGHT = 720;
+		/////////////////////////////////////////////////
 
-		const unsigned int PLATFORM_WIDTH = 60;
-		const unsigned int PLATFORM_HEIGHT = 20;
-		const float PLATFORM_SPEED = 300.f;
 
-		const unsigned int BLOCKS_COUNT_ROWS = 4;
-		const unsigned int BLOCKS_COUNT_IN_ROW = 15;
-		const unsigned int BLOCK_SHIFT = 5;
-		const unsigned int BLOCK_WIDTH = (SCREEN_WIDTH - (BLOCKS_COUNT_IN_ROW + 1) * BLOCK_SHIFT) / BLOCKS_COUNT_IN_ROW;
-		const unsigned int BLOCK_HEIGHT = 20;
 
-		const int MAX_RECORDS_TABLE_SIZE = 5;
-		const char* PLAYER_NAME = "Player";
+		float TIME_PER_FRAME; // Вычисляется из FPS
 
-		const std::string GAME_NAME = "ArkanoidGame";
-		const float BREAK_DELAY = 1.f;
-		const float BONUS_DURATION = 30.f;
-		const int BONUS_PROPABILITY_PERCENT = 5;
+		unsigned int BALL_SIZE = 20;
+		unsigned int BALL_SPEED = 400;
+
+		unsigned int PLATFORM_WIDTH = 60;
+		unsigned int PLATFORM_HEIGHT = 20;
+		float PLATFORM_SPEED = 300.f;
+
+		unsigned int BLOCKS_COUNT_ROWS = 4;
+		unsigned int BLOCKS_COUNT_IN_ROW = 15;
+		unsigned int BLOCK_SHIFT = 5;
+		unsigned int BLOCK_WIDTH; // Вычисляется
+		unsigned int BLOCK_HEIGHT = 20;
+
+		int MAX_RECORDS_TABLE_SIZE = 5;
+		std::string PLAYER_NAME = "Player"; // Заменили const char* на std::string
+
+		std::string GAME_NAME = "ArkanoidGame";
+		float BREAK_DELAY = 1.f;
+		float BONUS_DURATION = 30.f;
+		int BONUS_PROPABILITY_PERCENT = 5;
 	};
 }
 
-#define SETTINGS GameWorld::Instance()
+#define SETTINGS XYZRoguelike::GameSettings::Instance()

@@ -7,20 +7,21 @@
 #include "ResourceSystem.h"
 #include "DeveloperLevel.h"
 #include "Matrix2D.h"
+#include "GameSettings.h"
 
 using namespace XYZRoguelike;
 
 int main()
 {
-	XYZEngine::RenderSystem::Instance()->SetMainWindow(new sf::RenderWindow(sf::VideoMode(1280, 720), "XYZRoguelike"));
+	SETTINGS.LoadFromJson("settings.json");// Loading from the JSON configuration of the game
+	
+	XYZEngine::RenderSystem::Instance()->SetMainWindow(new sf::RenderWindow(sf::VideoMode(SETTINGS.SCREEN_WIDTH, SETTINGS.SCREEN_HEIGHT), "XYZRoguelike"));
 
-	//XYZEngine::ResourceSystem::Instance()->LoadTexture("ball", "Resources/Textures/ball.png");
+	ResourceSystem::Instance()->LoadTextureMap("player", SETTINGS.PLAYER_TEXTURES_PATH, { 48, 63 }, 4, false);
+	ResourceSystem::Instance()->LoadTextureMap("level_floors", SETTINGS.LEVELFLOOR_TEXTURES_PATH, { 16, 16 }, 49, false);
+	ResourceSystem::Instance()->LoadTextureMap("level_walls", SETTINGS.LEVELWALL_TEXTURES_PATH, { 16, 16 }, 48, false);
 
-	ResourceSystem::Instance()->LoadTextureMap("player", "Resources/TextureMaps/Player.png", { 48, 63 }, 4, false);
-	ResourceSystem::Instance()->LoadTextureMap("level_floors", "Resources/TextureMaps/Floor.png", { 16, 16 }, 49, false);
-	ResourceSystem::Instance()->LoadTextureMap("level_walls", "Resources/TextureMaps/Wall.png", { 16, 16 }, 48, false);
-
-	ResourceSystem::Instance()->LoadSound("music", "Resources/Sounds/AppleEat.wav");
+	ResourceSystem::Instance()->LoadSound("music", SETTINGS.MUSIC_PATH);
 
 	auto developerLevel = std::make_shared<DeveloperLevel>();
 	developerLevel->Start();

@@ -1,0 +1,36 @@
+{
+  "App": {
+    "GameName": "ArkanoidGame",
+    "ScreenWidth": 1280,
+    "ScreenHeight": 720,
+    "Fps": 60
+  },
+  "Gameplay": {
+    "Acceleration": 10.0,
+    "MaxApples": 80,
+    "BallSize": 20,
+    "BallSpeed": 400,
+    "BreakDelay": 1.0,
+    "BonusDuration": 30.0,
+    "BonusProbabilityPercent": 5
+  },
+  "Platform": {
+    "Width": 60,
+    "Height": 20,
+    "Speed": 300.0
+  },
+  "Blocks": {
+    "CountRows": 4,
+    "CountInRow": 15,
+    "Shift": 5,
+    "Height": 20
+  },
+  "Player": {
+    "Name": "Player",
+    "MaxRecordsTableSize": 5
+  },
+  "Paths": {
+    "Resources": "Resources/",
+    "LevelsConfig": "Resources/levels.config"
+  }
+}
